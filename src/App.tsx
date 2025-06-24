@@ -1,4 +1,4 @@
-// File: src/App.tsx
+/ File: src/App.tsx
 
 import { ConnectWallet, useAddress, useContract, useContractRead, Web3Button } from "@thirdweb-dev/react";
 import "./App.css";
@@ -20,11 +20,12 @@ export default function App() {
   const { data: tokenSymbol, isLoading: isLoadingSymbol } = useContractRead(contract, "symbol");
 
   // 3. Leggiamo il SALDO (balance) dell'utente connesso
+  // L'hook si disattiva automaticamente se `connectedAddress` è undefined.
+  // Non serve passare altre opzioni.
   const { data: tokenBalance, isLoading: isLoadingBalance } = useContractRead(
     contract, 
     "balanceOf", 
-    [connectedAddress],
-    { enabled: !!connectedAddress }
+    [connectedAddress]
   );
 
   return (

@@ -1,35 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx (o .tsx)
 
-function App() {
-  const [count, setCount] = useState(0)
+import { ConnectWallet, useAddress, useContract, useContractRead, Web3Button } from "@thirdweb-dev/react";
+import "./App.css";
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+// Leggiamo l'indirizzo del contratto dalle variabili d'ambiente
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
+
+// ... tutto il resto del codice del componente rimane identico ...
+
+export default function App() {
+  const connectedAddress = useAddress();
+  const { contract } = useContract(CONTRACT_ADDRESS);
+
+  const { data: tokenName, isLoading: isLoadingName } = useContractRead(contract, "name");
+  // ... ecc ...
+  
+  // Il resto del codice non cambia
 }
-
-export default App

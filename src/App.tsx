@@ -1,29 +1,8 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-import { ThirdwebProvider } from '@thirdweb-dev/react';
-
-const activeChain = "sepolia";
-
-const container = document.getElementById('root');
-
-if (container) {
-  const root = ReactDOM.createRoot(container);
-  root.render(
-    <React.StrictMode>
-      <ThirdwebProvider
-        activeChain={activeChain}
-        clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
-      >
-        <App />
-      </ThirdwebProvider>
-    </React.StrictMode>
-  );
-} else {
-  console.error("Elemento 'root' non trovato nel DOM. Il mounting dell'app React è fallito.");
-}
-```typescript
+// ==========================================
+// File: src/App.tsx
+// Copia e incolla tutto il codice seguente
+// nel tuo file `src/App.tsx`.
+// ==========================================
 import { ConnectWallet, useAddress, useContract, useContractRead, Web3Button } from "@thirdweb-dev/react";
 import "./App.css";
 
@@ -78,11 +57,16 @@ export default function App() {
           contractAddress={CONTRACT_ADDRESS}
           action={(contract) => {
             const quantity = "10"; 
-            contract.call("claimTo", [connectedAddress, quantity]);
+            return contract.call("claimTo", [connectedAddress, quantity]);
           }}
           isDisabled={!connectedAddress}
-          onSuccess={() => alert("10 RDT richiesti con successo!")}
-          onError={(error) => alert(`Qualcosa è andato storto: ${error.message}`)}
+          onSuccess={() => {
+            // Non usare alert(), potrebbe non funzionare in tutti gli ambienti
+            console.log("10 RDT richiesti con successo!");
+          }}
+          onError={(error) => {
+            console.error("Qualcosa è andato storto:", error.message);
+          }}
         >
           Richiedi 10 RDT
         </Web3Button>

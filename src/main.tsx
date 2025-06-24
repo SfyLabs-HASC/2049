@@ -1,5 +1,8 @@
+// ==========================================
 // File: src/main.tsx
-
+// Copia e incolla tutto il codice seguente
+// nel tuo file `src/main.tsx`.
+// ==========================================
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';

@@ -40,7 +40,7 @@ export default function HomePage() {
               </ul>
             </div>
           )}
-          {/* CORREZIONE: Gestisce correttamente l'oggetto 'error' per la visualizzazione */}
+          {/* QUESTA È LA RIGA CORRETTA */}
           {error && <p style={{color: 'red'}}>Errore: {error instanceof Error ? error.message : "Si è verificato un errore sconosciuto"}</p>}
         </div>
       ) : (

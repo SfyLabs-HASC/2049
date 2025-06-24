@@ -40,7 +40,10 @@ export default function HomePage() {
               </ul>
             </div>
           )}
-          {/* QUESTA È LA RIGA CORRETTA */}
+          {/* CORREZIONE DEFINITIVA: 
+            Questa riga gestisce l'oggetto 'error' (che è di tipo 'unknown') in modo sicuro per TypeScript, 
+            leggendone la proprietà '.message' solo se è un oggetto di tipo 'Error'.
+          */}
           {error && <p style={{color: 'red'}}>Errore: {error instanceof Error ? error.message : "Si è verificato un errore sconosciuto"}</p>}
         </div>
       ) : (

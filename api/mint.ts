@@ -1,11 +1,10 @@
 // ==========================================
-// File: /api/mint.ts (da creare nella cartella /api)
-// Questo è un Serverless Function di Vercel.
+// FILE: api/mint.ts
 // ==========================================
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { TOTP } from "otpauth";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Chiave segreta per la verifica. DEVE essere la stessa usata nel frontend.
 const OTP_SECRET = 'KVKFKJSXMusicSceneKVKFKJSXMusicScene';
 
 let totp = new TOTP({
@@ -17,7 +16,7 @@ let totp = new TOTP({
   secret: OTP_SECRET,
 });
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -29,13 +28,11 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: 'Campi mancanti' });
         }
 
-        // 1. Verifica il segreto TOTP
         const delta = totp.validate({ token: secret, window: 1 });
         if (delta === null) {
             return res.status(401).json({ error: 'Segreto non valido o scaduto.' });
         }
         
-        // 2. Inizializza l'SDK con la Secret Key (Backend Wallet)
         const sdk = ThirdwebSDK.fromPrivateKey(
             process.env.THIRDWEB_SECRET_KEY as string, 
             "sepolia"
@@ -43,20 +40,16 @@ export default async function handler(req: any, res: any) {
             
         const contract = await sdk.getContract(process.env.VITE_CONTRACT_ADDRESS as string);
         
-        // 3. Esegui il mint dell'NFT
-        // Questo esempio usa `mintTo` per un contratto ERC721.
-        // Adatta la funzione e i metadati al tuo contratto specifico.
         const metadata = {
             name: `NFT #${nftId}`,
             description: `NFT speciale mintato per ${userWallet}`,
-            image: "ipfs://...", // Aggiungi un'immagine se vuoi
+            image: "ipfs://...", 
         };
 
         const tx = await contract.erc721.mintTo(userWallet, metadata);
         
-        const receipt = tx.receipt; // Contiene l'hash della transazione
+        const receipt = tx.receipt; 
         
-        // 4. Invia la risposta
         return res.status(200).json({ success: true, transactionHash: receipt.transactionHash });
 
     } catch (error: any) {

@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: src/components/HomePage.tsx
-// ==========================================
 import { ConnectWallet, useAddress, useContract, useOwnedNFTs } from "@thirdweb-dev/react";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as string;
@@ -43,6 +40,7 @@ export default function HomePage() {
               </ul>
             </div>
           )}
+          {/* CORREZIONE: Gestisce correttamente l'oggetto 'error' per la visualizzazione */}
           {error && <p style={{color: 'red'}}>Errore: {error instanceof Error ? error.message : "Si è verificato un errore sconosciuto"}</p>}
         </div>
       ) : (

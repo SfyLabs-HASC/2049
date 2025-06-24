@@ -1,7 +1,5 @@
 // ==========================================
 // File: src/main.tsx
-// Copia e incolla tutto il codice seguente
-// nel tuo file `src/main.tsx`.
 // ==========================================
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -10,7 +8,6 @@ import './index.css';
 import { ThirdwebProvider } from '@thirdweb-dev/react';
 
 const activeChain = "sepolia";
-
 const container = document.getElementById('root');
 
 if (container) {
@@ -25,6 +22,4 @@ if (container) {
       </ThirdwebProvider>
     </React.StrictMode>
   );
-} else {
-  console.error("Elemento 'root' non trovato nel DOM. Il mounting dell'app React è fallito.");
 }

@@ -1,8 +1,7 @@
 // ==========================================
-// File: src/components/HomePage.tsx
+// FILE: src/components/HomePage.tsx
 // ==========================================
 import { ConnectWallet, useAddress, useContract, useOwnedNFTs } from "@thirdweb-dev/react";
-import React from "react";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as string;
 
@@ -39,13 +38,12 @@ export default function HomePage() {
                   <li key={nft.metadata.id.toString()}>
                     <p><strong>Nome:</strong> {nft.metadata.name}</p>
                     <p><strong>ID:</strong> {nft.metadata.id.toString()}</p>
-                    {/* Aggiungi qui altri metadati se presenti */}
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          {error && <p style={{color: 'red'}}>Errore nel caricamento degli NFT.</p>}
+          {error && <p style={{color: 'red'}}>Errore: {error instanceof Error ? error.message : "Si è verificato un errore sconosciuto"}</p>}
         </div>
       ) : (
         <div className="card">

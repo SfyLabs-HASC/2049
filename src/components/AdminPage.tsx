@@ -88,4 +88,5 @@ export default function AdminPage() {
         {mintingStatus && <p><strong>Stato:</strong> {mintingStatus}</p>}
       </div>
     </div>
-  )
+  );
+}

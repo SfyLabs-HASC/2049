@@ -1,7 +1,7 @@
 // ==========================================
-// File: src/index.css (Aggiungi questi stili)
+// File: src/index.css (Contenuto corretto e decommentato)
 // ==========================================
-/* :root, body, #root {
+:root, body, #root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -49,11 +49,13 @@ button:hover {
 
 input {
     width: 100%;
+    box-sizing: border-box;
     padding: 0.8em;
     margin-bottom: 1em;
     border-radius: 8px;
     border: 1px solid #555;
     background-color: #242424;
+    color: rgba(255, 255, 255, 0.87);
 }
 
 ul {
@@ -67,4 +69,19 @@ li {
     border-radius: 4px;
     margin-bottom: 1rem;
 }
-*/
+
+nav {
+    border-bottom: 1px solid #333;
+    margin-bottom: 2rem;
+}
+
+nav a {
+    color: #a0a0a0;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: #646cff;
+}

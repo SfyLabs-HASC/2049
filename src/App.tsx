@@ -1,6 +1,4 @@
-* =================================================================
-   File: src/App.tsx
-   ================================================================= */
+// File: src/App.tsx
 
 import { ConnectWallet, useAddress, useContract, useContractRead, Web3Button } from "@thirdweb-dev/react";
 import "./App.css";
@@ -29,7 +27,6 @@ export default function App() {
     { enabled: !!connectedAddress }
   );
 
-  // QUESTA È LA PARTE MANCANTE - il return con il JSX
   return (
     <main className="container">
       <div className="header">

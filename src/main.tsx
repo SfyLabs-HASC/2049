@@ -1,6 +1,4 @@
-/* =================================================================
-   File: src/main.tsx
-   ================================================================= */
+// File: src/main.tsx
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -10,7 +8,6 @@ import { ThirdwebProvider } from '@thirdweb-dev/react';
 
 const activeChain = "sepolia";
 
-// Aggiungiamo un controllo per assicurarci che l'elemento 'root' esista
 const container = document.getElementById('root');
 
 if (container) {

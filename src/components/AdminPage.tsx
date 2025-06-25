@@ -1,6 +1,3 @@
-// ==========================================
-// File: src/components/AdminPage.tsx
-// ==========================================
 import React, { useState } from 'react';
 import QrCode from './QrCode';
 
@@ -10,12 +7,10 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // --- Stati per il form di mint ---
   const [userWallet, setUserWallet] = useState('');
   const [nftId, setNftId] = useState('');
   const [secret, setSecret] = useState('');
   const [mintingStatus, setMintingStatus] = useState('');
-
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +30,7 @@ export default function AdminPage() {
       const response = await fetch('/api/mint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userWallet,
-          nftId,
-          secret,
-        }),
+        body: JSON.stringify({ userWallet, nftId, secret }),
       });
 
       const data = await response.json();

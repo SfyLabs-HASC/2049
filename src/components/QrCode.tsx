@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: src/components/QrCode.tsx
-// ==========================================
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { TOTP } from 'otpauth';

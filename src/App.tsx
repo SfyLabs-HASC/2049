@@ -1,7 +1,3 @@
-// ==========================================
-// File: src/App.tsx
-// Gestisce la navigazione tra le pagine
-// ==========================================
 import { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
 import AdminPage from './components/AdminPage';
@@ -22,7 +18,6 @@ export default function App() {
     setRoute(path);
   };
 
-  // Semplice router basato sullo stato
   let Component;
   switch (route) {
     case '/1':
@@ -32,8 +27,6 @@ export default function App() {
       Component = <HomePage />;
   }
   
-  // Aggiungiamo un modo per navigare (per ora semplice)
-  // In una app reale useremmo una libreria come React Router
   return (
     <div>
       <nav style={{ padding: '1rem', background: '#111', textAlign: 'center' }}>

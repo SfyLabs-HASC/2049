@@ -1,8 +1,3 @@
-================================================================================
-FILE: vite.config.ts
-Sostituisci il contenuto del tuo file con questo.
-================================================================================
-*/
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 

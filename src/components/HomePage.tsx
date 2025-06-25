@@ -1,8 +1,3 @@
-================================================================================
-FILE: src/components/HomePage.tsx
-Verifica che il tuo file sia così. Questa è la versione più sicura.
-================================================================================
-*/
 import { ConnectWallet, useAddress, useContract, useOwnedNFTs } from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
 

@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: api/mint.ts
-// ==========================================
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { TOTP } from "otpauth";
 import type { NextApiRequest, NextApiResponse } from 'next';

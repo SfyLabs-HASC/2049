@@ -4,7 +4,8 @@ import App from './App.tsx';
 import './index.css';
 import { ThirdwebProvider } from '@thirdweb-dev/react';
 
-const activeChain = "sepolia";
+// MODIFICA: Cambiata la chain da "sepolia" a "moonbeam"
+const activeChain = "moonbeam";
 const container = document.getElementById('root');
 
 if (container) {

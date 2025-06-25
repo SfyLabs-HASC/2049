@@ -1,4 +1,3 @@
-import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { TOTP } from "otpauth";
 
 // Chiave segreta per la verifica. DEVE essere la stessa usata nel frontend.
@@ -13,13 +12,21 @@ let totp = new TOTP({
   secret: OTP_SECRET,
 });
 
-// Correzione: Rimossi i tipi 'NextApiRequest' e 'NextApiResponse'
-// e usati i tipi generici per la massima compatibilità.
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    const ENGINE_URL = process.env.ENGINE_URL;
+    const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN;
+    const ENGINE_BACKEND_WALLET_ADDRESS = process.env.ENGINE_BACKEND_WALLET_ADDRESS;
+    const CONTRACT_ADDRESS = process.env.VITE_CONTRACT_ADDRESS;
+
+    if (!ENGINE_URL || !ENGINE_ACCESS_TOKEN || !ENGINE_BACKEND_WALLET_ADDRESS || !CONTRACT_ADDRESS) {
+      console.error("Variabili d'ambiente di Engine non configurate!");
+      return res.status(500).json({ error: "Configurazione del server errata." });
+    }
+    
     try {
         const { userWallet, nftId, secret } = req.body;
         
@@ -32,27 +39,41 @@ export default async function handler(req: any, res: any) {
             return res.status(401).json({ error: 'Segreto non valido o scaduto.' });
         }
         
-        const sdk = ThirdwebSDK.fromPrivateKey(
-            process.env.THIRDWEB_SECRET_KEY as string, 
-            "sepolia"
+        // MODIFICA: Cambiata la chain da "sepolia" a "moonbeam"
+        const response = await fetch(
+            `${ENGINE_URL}/contract/moonbeam/${CONTRACT_ADDRESS}/erc721/mint-to`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${ENGINE_ACCESS_TOKEN}`,
+                    "x-backend-wallet-address": ENGINE_BACKEND_WALLET_ADDRESS,
+                },
+                body: JSON.stringify({
+                    receiver: userWallet,
+                    metadata: {
+                        name: `NFT #${nftId}`,
+                        description: `NFT speciale mintato per ${userWallet}`,
+                        image: "ipfs://...",
+                    }
+                })
+            }
         );
-            
-        const contract = await sdk.getContract(process.env.VITE_CONTRACT_ADDRESS as string);
-        
-        const metadata = {
-            name: `NFT #${nftId}`,
-            description: `NFT speciale mintato per ${userWallet}`,
-            image: "ipfs://...", // Sostituisci con un hash IPFS valido se vuoi
-        };
 
-        const tx = await contract.erc721.mintTo(userWallet, metadata);
-        
-        const receipt = tx.receipt; 
-        
-        return res.status(200).json({ success: true, transactionHash: receipt.transactionHash });
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("Errore da Thirdweb Engine:", data);
+            throw new Error(data.error?.message || 'Errore durante la chiamata a Engine.');
+        }
+
+        return res.status(200).json({ 
+            success: true, 
+            transactionHash: data.result?.queueId || "Transazione accodata con successo" 
+        });
 
     } catch (error: any) {
         console.error("Errore nell'API di mint:", error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message || 'Errore sconosciuto durante il minting.' });
     }
 }

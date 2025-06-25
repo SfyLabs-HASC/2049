@@ -41,7 +41,7 @@ export default async function handler(req: any, res: any) {
         }
         
         // SOLUZIONE FINALE: Inizializziamo l'SDK direttamente dalla chiave privata.
-        // Questo crea un "signer" che può approvare transazioni.
+        // Questo crea un "signer" che può approvare transazioni in modo diretto e affidabile.
         const sdk = ThirdwebSDK.fromPrivateKey(
           BACKEND_WALLET_PRIVATE_KEY,
           "moonbeam"

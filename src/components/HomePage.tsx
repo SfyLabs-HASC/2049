@@ -2,6 +2,14 @@ import { ConnectWallet, useAddress, useContract, useOwnedNFTs } from "@thirdweb-
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as string;
 
+// Funzione helper per gestire in modo sicuro l'errore di tipo 'unknown'
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Si è verificato un errore sconosciuto nel caricamento degli NFT.";
+};
+
 export default function HomePage() {
   const address = useAddress();
   const { contract } = useContract(CONTRACT_ADDRESS);
@@ -40,11 +48,10 @@ export default function HomePage() {
               </ul>
             </div>
           )}
-          {/* CORREZIONE DEFINITIVA: 
-            Questa riga gestisce l'oggetto 'error' (che è di tipo 'unknown') in modo sicuro per TypeScript, 
-            leggendone la proprietà '.message' solo se è un oggetto di tipo 'Error'.
+          {/* QUESTA È LA SOLUZIONE DEFINITIVA: 
+              Usiamo la funzione helper per mostrare il messaggio di errore in modo sicuro. 
           */}
-          {error && <p style={{color: 'red'}}>Errore: {error instanceof Error ? error.message : "Si è verificato un errore sconosciuto"}</p>}
+          {error && <p style={{color: 'red'}}>Errore: {getErrorMessage(error)}</p>}
         </div>
       ) : (
         <div className="card">

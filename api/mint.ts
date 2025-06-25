@@ -1,6 +1,7 @@
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { TOTP } from "otpauth";
 
+// Chiave segreta per la verifica TOTP. DEVE essere la stessa usata nel frontend.
 const OTP_SECRET = 'KVKFKJSXMusicSceneKVKFKJSXMusicScene';
 
 let totp = new TOTP({
@@ -17,6 +18,7 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    // Prendiamo le credenziali necessarie dalle variabili d'ambiente di Vercel
     const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
     const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS; 
 
@@ -32,24 +34,26 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: 'Campi mancanti' });
         }
 
+        // 1. Verifica il segreto TOTP
         const delta = totp.validate({ token: secret, window: 1 });
         if (delta === null) {
             return res.status(401).json({ error: 'Segreto non valido o scaduto.' });
         }
         
+        // SOLUZIONE DEFINITIVA: Inizializziamo l'SDK passando la secretKey come opzione.
+        // Questo è il metodo corretto e supportato per l'autenticazione backend con Vault.
+        // L'SDK userà la Secret Key per autenticarsi e ottenere l'accesso al wallet firmatario.
         const sdk = new ThirdwebSDK("moonbeam", {
           secretKey: THIRDWEB_SECRET_KEY,
         });
             
         const contract = await sdk.getContract(CONTRACT_ADDRESS);
         
-        // SOLUZIONE: Cambiamo il nome della funzione da "safeMint" a "mint".
-        // "mint" è l'altro nome standard per la funzione di minting.
-        // 
-        // IMPORTANTE: Se anche questo non funziona, devi trovare il nome esatto
-        // della funzione di mint nel codice del tuo smart contract.
+        // 3. Esegui il mint chiamando direttamente la funzione del tuo contratto
+        // NOTA: Abbiamo visto che "safeMint" non esiste. Usiamo "mint".
+        // Se il nome della funzione nel tuo contratto è diverso, cambialo qui.
         const tx = await contract.call(
-            "mint",     // <--- NOME DELLA FUNZIONE CAMBIATO
+            "mint",     // <--- NOME DELLA FUNZIONE DI MINT
             [
                 userWallet, // L'indirizzo a cui mintare (to)
                 nftId       // L'ID del token da mintare (tokenId)
@@ -58,6 +62,7 @@ export default async function handler(req: any, res: any) {
         
         const receipt = tx.receipt; 
         
+        // 4. Invia la risposta di successo
         return res.status(200).json({ success: true, transactionHash: receipt.transactionHash });
 
     } catch (error: any) {

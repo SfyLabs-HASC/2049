@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { ThirdwebProvider } from '@thirdweb-dev/react';
+// NUOVO: Importiamo la definizione della chain Moonbeam
+import { Moonbeam } from "@thirdweb-dev/chains";
 
-// MODIFICA: Cambiata la chain da "sepolia" a "moonbeam"
-const activeChain = "moonbeam";
+// MODIFICA: Usiamo l'oggetto Moonbeam importato invece della stringa "moonbeam"
+const activeChain = Moonbeam;
 const container = document.getElementById('root');
 
 if (container) {

@@ -18,10 +18,10 @@ export default async function handler(req: any, res: any) {
     }
 
     const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
-    const CONTRACT_ADDRESS = process.env.VITE_CONTRACT_ADDRESS;
+    const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS; 
 
     if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS) {
-      console.error("Variabili d'ambiente THIRDWEB_SECRET_KEY o VITE_CONTRACT_ADDRESS non configurate!");
+      console.error("Variabili d'ambiente THIRDWEB_SECRET_KEY o CONTRACT_ADDRESS non configurate!");
       return res.status(500).json({ error: "Configurazione del server errata." });
     }
     
@@ -37,27 +37,32 @@ export default async function handler(req: any, res: any) {
             return res.status(401).json({ error: 'Segreto non valido o scaduto.' });
         }
         
-        // SOLUZIONE DEFINITIVA: Inizializziamo l'SDK passando la secretKey come opzione.
-        // Questo è il metodo corretto e supportato per l'autenticazione backend.
         const sdk = new ThirdwebSDK("moonbeam", {
           secretKey: THIRDWEB_SECRET_KEY,
         });
             
         const contract = await sdk.getContract(CONTRACT_ADDRESS);
         
-        const metadata = {
-            name: `NFT #${nftId}`,
-            description: `NFT speciale mintato per ${userWallet}`,
-            image: "ipfs://...", // Sostituisci con un hash IPFS valido
-        };
-
-        const tx = await contract.erc721.mintTo(userWallet, metadata);
+        // SOLUZIONE: Non usiamo più la scorciatoia .erc721.mintTo.
+        // Usiamo il metodo generico .call() per chiamare direttamente la funzione
+        // 'safeMint' del tuo contratto.
+        // NOTA: Se la funzione di mint del tuo contratto ha un nome diverso (es. "mint"),
+        // devi cambiarlo qui.
+        const tx = await contract.call(
+            "safeMint",     // <--- NOME DELLA FUNZIONE DI MINT DEL TUO CONTRATTO
+            [
+                userWallet, // L'indirizzo a cui mintare (to)
+                nftId       // L'ID del token da mintare (tokenId)
+            ]
+        );
+        
         const receipt = tx.receipt; 
         
         return res.status(200).json({ success: true, transactionHash: receipt.transactionHash });
 
     } catch (error: any) {
         console.error("Errore nell'API di mint:", error);
+        // Inoltriamo il messaggio di errore specifico dal SDK/contratto
         return res.status(500).json({ error: error.message || 'Errore sconosciuto durante il minting.' });
     }
 }

@@ -1,7 +1,7 @@
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { TOTP } from "otpauth";
 
-// Chiave segreta per la verifica TOTP. DEVE essere la stessa usata nel frontend.
+// Chiave segreta per la verifica TOTP.
 const OTP_SECRET = 'KVKFKJSXMusicSceneKVKFKJSXMusicScene';
 
 let totp = new TOTP({
@@ -21,9 +21,10 @@ export default async function handler(req: any, res: any) {
     // Prendiamo le credenziali necessarie dalle variabili d'ambiente di Vercel
     const BACKEND_WALLET_PRIVATE_KEY = process.env.BACKEND_WALLET_PRIVATE_KEY;
     const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS; 
+    const THIRDWEB_API_KEY = process.env.THIRDWEB_API_KEY;
 
-    if (!BACKEND_WALLET_PRIVATE_KEY || !CONTRACT_ADDRESS) {
-      console.error("Variabili d'ambiente BACKEND_WALLET_PRIVATE_KEY o CONTRACT_ADDRESS non configurate!");
+    if (!BACKEND_WALLET_PRIVATE_KEY || !CONTRACT_ADDRESS || !THIRDWEB_API_KEY) {
+      console.error("Una o più variabili d'ambiente (PRIVATE_KEY, CONTRACT_ADDRESS, API_KEY) non sono configurate!");
       return res.status(500).json({ error: "Configurazione del server errata." });
     }
     
@@ -34,27 +35,26 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: 'Campi mancanti' });
         }
 
-        // 1. Verifica il segreto TOTP
         const delta = totp.validate({ token: secret, window: 1 });
         if (delta === null) {
             return res.status(401).json({ error: 'Segreto non valido o scaduto.' });
         }
         
-        // SOLUZIONE FINALE: Inizializziamo l'SDK direttamente dalla chiave privata.
-        // Questo crea un "signer" che può approvare transazioni in modo diretto e affidabile.
+        // SOLUZIONE FINALE: Usiamo l'RPC dedicato di Thirdweb per Moonbeam
+        const rpcUrl = `https://1284.rpc.thirdweb.com/${THIRDWEB_API_KEY}`;
+        
         const sdk = ThirdwebSDK.fromPrivateKey(
           BACKEND_WALLET_PRIVATE_KEY,
-          "moonbeam"
+          rpcUrl
         );
             
         const contract = await sdk.getContract(CONTRACT_ADDRESS);
         
-        // 3. Esegui il mint chiamando direttamente la funzione del tuo contratto
         const tx = await contract.call(
-            "mint",     // Assicurati che il nome della funzione sia corretto
+            "mint",
             [
-                userWallet, // L'indirizzo a cui mintare (to)
-                nftId       // L'ID del token da mintare (tokenId)
+                userWallet,
+                nftId
             ]
         );
         
@@ -63,7 +63,7 @@ export default async function handler(req: any, res: any) {
         return res.status(200).json({ success: true, transactionHash: receipt.transactionHash });
 
     } catch (error: any) {
-        console.error("Errore nell'API di mint:", error);
+        console.error("ERRORE DETTAGLIATO NELL'API DI MINT:", JSON.stringify(error, null, 2));
         return res.status(500).json({ error: error.message || 'Errore sconosciuto durante il minting.' });
     }
 }

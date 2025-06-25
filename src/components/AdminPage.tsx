@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import QrCode from './QrCode';
 
 export default function AdminPage() {

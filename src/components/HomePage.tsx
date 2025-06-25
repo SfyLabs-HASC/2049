@@ -1,21 +1,27 @@
-import { ConnectWallet, useAddress, useContract, useNFT, useTotalCount } from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress, useContract, useNFT } from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as string;
 
-// Componente per visualizzare un singolo NFT
-// Recupera i metadati usando l'ID dell'NFT
-const NftCard = ({ tokenId }: { tokenId: number }) => {
-  const { contract } = useContract(CONTRACT_ADDRESS);
-  const { data: nft, isLoading, error } = useNFT(contract, tokenId);
+// Definiamo un'interfaccia per i nostri dati
+interface OwnedNft {
+  id: number;
+  quantity: number;
+}
 
-  if (isLoading) return <li>Caricamento NFT #{tokenId}...</li>;
-  if (error || !nft) return <li>Impossibile caricare NFT #{tokenId}</li>;
+// Componente per visualizzare un singolo tipo di NFT e la sua quantità
+const NftCard = ({ nftData }: { nftData: OwnedNft }) => {
+  const { contract } = useContract(CONTRACT_ADDRESS);
+  // Usiamo l'hook useNFT per ottenere i metadati (nome, immagine) del tipo di token
+  const { data: nftMetadata, isLoading } = useNFT(contract, nftData.id);
+
+  if (isLoading) return <li>Caricamento metadati per NFT #{nftData.id}...</li>;
 
   return (
-    <li key={nft.metadata.id}>
-      <p><strong>Nome:</strong> {nft.metadata.name}</p>
-      <p><strong>ID:</strong> {nft.metadata.id}</p>
+    <li>
+      <p><strong>Nome:</strong> {nftMetadata?.metadata.name || `Token #${nftData.id}`}</p>
+      <p><strong>ID Tipo:</strong> {nftData.id}</p>
+      <p><strong>Quantità posseduta:</strong> {nftData.quantity}</p>
     </li>
   );
 };
@@ -24,46 +30,58 @@ const NftCard = ({ tokenId }: { tokenId: number }) => {
 export default function HomePage() {
   const address = useAddress();
   const { contract } = useContract(CONTRACT_ADDRESS);
-  // SOLUZIONE: Non usiamo più useOwnedNFTs.
-  // Prima, otteniamo il numero totale di NFT nel contratto.
-  const { data: totalCount, isLoading: isLoadingTotalCount } = useTotalCount(contract);
-  
-  // Stato per salvare gli ID degli NFT dell'utente
-  const [ownedTokenIds, setOwnedTokenIds] = useState<number[]>([]);
-  const [isFetchingOwned, setIsFetchingOwned] = useState(false);
+
+  // Stato per salvare gli NFT che l'utente possiede
+  const [ownedNfts, setOwnedNfts] = useState<OwnedNft[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Questo useEffect si attiva quando l'utente si connette o il contratto è pronto.
   useEffect(() => {
-    if (!address || !contract || totalCount === undefined) return;
+    // Lista degli ID dei TIPI di token che vogliamo controllare.
+    // Dovrai aggiornare questa lista se aggiungi nuovi tipi di NFT.
+    const TOKEN_IDS_TO_CHECK = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; 
 
-    const fetchOwnedNfts = async () => {
-      setIsFetchingOwned(true);
-      const ownedIds = [];
-      // Questo è il metodo manuale e robusto:
-      // controlliamo ogni NFT, uno per uno, per vedere chi è il proprietario.
-      for (let i = 0; i < totalCount.toNumber(); i++) {
-        try {
-          // SOLUZIONE: Usiamo contract.erc721.ownerOf() per accedere alla funzione corretta.
-          const owner = await contract.erc721.ownerOf(i);
-          if (owner.toLowerCase() === address.toLowerCase()) {
-            ownedIds.push(i);
+    if (!address || !contract) {
+      setOwnedNfts([]); // Pulisce la lista se l'utente si disconnette
+      return;
+    }
+
+    const fetchOwnedBalances = async () => {
+      setIsLoading(true);
+      try {
+        // Creiamo una lista di "promesse", una per ogni chiamata al contratto
+        const balancePromises = TOKEN_IDS_TO_CHECK.map(tokenId => 
+          contract.erc1155.balanceOf(address, tokenId)
+        );
+        
+        // Eseguiamo tutte le chiamate in parallelo per essere più veloci
+        const balances = await Promise.all(balancePromises);
+
+        const owned = [];
+        for (let i = 0; i < TOKEN_IDS_TO_CHECK.length; i++) {
+          const balance = balances[i];
+          // Se il saldo è maggiore di zero, l'utente possiede questo tipo di NFT
+          if (balance.gt(0)) {
+            owned.push({
+              id: TOKEN_IDS_TO_CHECK[i],
+              quantity: balance.toNumber(),
+            });
           }
-        } catch (e) {
-            console.error(`Impossibile controllare il proprietario del token ${i}`, e);
         }
+        setOwnedNfts(owned);
+      } catch (e) {
+        console.error("Impossibile recuperare i saldi degli NFT", e);
+      } finally {
+        setIsLoading(false);
       }
-      setOwnedTokenIds(ownedIds);
-      setIsFetchingOwned(false);
     };
 
-    fetchOwnedNfts();
-  }, [address, contract, totalCount]);
+    fetchOwnedBalances();
+  }, [address, contract]);
 
   const handleRefresh = () => {
     window.location.reload();
   };
-
-  const isLoading = isLoadingTotalCount || isFetchingOwned;
 
   return (
     <main className="container">
@@ -84,14 +102,12 @@ export default function HomePage() {
 
           {!isLoading && (
             <>
-              {ownedTokenIds.length === 0 && <p>Non possiedi nessun NFT da questo contratto.</p>}
-              {ownedTokenIds.length > 0 && (
+              {ownedNfts.length === 0 && <p>Non possiedi nessun NFT da questo contratto.</p>}
+              {ownedNfts.length > 0 && (
                 <div>
-                  <p><strong>Numero di NFT:</strong> {ownedTokenIds.length}</p>
                   <ul>
-                    {/* Per ogni ID trovato, renderizziamo un componente NftCard */}
-                    {ownedTokenIds.map((tokenId) => (
-                      <NftCard key={tokenId} tokenId={tokenId} />
+                    {ownedNfts.map((nftData) => (
+                      <NftCard key={nftData.id} nftData={nftData} />
                     ))}
                   </ul>
                 </div>

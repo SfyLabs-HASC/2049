@@ -1,7 +1,6 @@
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { TOTP } from "otpauth";
 
-// Chiave segreta per la verifica TOTP.
 const OTP_SECRET = 'KVKFKJSXMusicSceneKVKFKJSXMusicScene';
 
 let totp = new TOTP({
@@ -18,13 +17,12 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Prendiamo le credenziali necessarie dalle variabili d'ambiente di Vercel
     const BACKEND_WALLET_PRIVATE_KEY = process.env.BACKEND_WALLET_PRIVATE_KEY;
     const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS; 
     const THIRDWEB_API_KEY = process.env.THIRDWEB_API_KEY;
 
     if (!BACKEND_WALLET_PRIVATE_KEY || !CONTRACT_ADDRESS || !THIRDWEB_API_KEY) {
-      console.error("Una o più variabili d'ambiente (PRIVATE_KEY, CONTRACT_ADDRESS, API_KEY) non sono configurate!");
+      console.error("Una o più variabili d'ambiente non sono configurate!");
       return res.status(500).json({ error: "Configurazione del server errata." });
     }
     
@@ -40,7 +38,6 @@ export default async function handler(req: any, res: any) {
             return res.status(401).json({ error: 'Segreto non valido o scaduto.' });
         }
         
-        // SOLUZIONE FINALE: Usiamo l'RPC dedicato di Thirdweb per Moonbeam
         const rpcUrl = `https://1284.rpc.thirdweb.com/${THIRDWEB_API_KEY}`;
         
         const sdk = ThirdwebSDK.fromPrivateKey(
@@ -50,11 +47,14 @@ export default async function handler(req: any, res: any) {
             
         const contract = await sdk.getContract(CONTRACT_ADDRESS);
         
+        // SOLUZIONE: Chiamiamo la funzione di mint con i parametri standard per un ERC1155.
         const tx = await contract.call(
-            "mint",
+            "mint", // Assicurati che il nome della funzione sia corretto
             [
-                userWallet,
-                nftId
+                userWallet, // L'indirizzo a cui mintare (to)
+                nftId,      // L'ID del TIPO di token (tokenId)
+                1,          // La QUANTITÀ da mintare (amount)
+                "0x00"      // Dati aggiuntivi, di solito vuoti (data)
             ]
         );
         

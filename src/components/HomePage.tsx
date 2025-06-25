@@ -43,7 +43,8 @@ export default function HomePage() {
       // controlliamo ogni NFT, uno per uno, per vedere chi è il proprietario.
       for (let i = 0; i < totalCount.toNumber(); i++) {
         try {
-          const owner = await contract.ownerOf(i);
+          // SOLUZIONE: Usiamo contract.erc721.ownerOf() per accedere alla funzione corretta.
+          const owner = await contract.erc721.ownerOf(i);
           if (owner.toLowerCase() === address.toLowerCase()) {
             ownedIds.push(i);
           }

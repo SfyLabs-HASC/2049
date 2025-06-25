@@ -1,19 +1,20 @@
 import { ConnectWallet, useAddress, useContract, useOwnedNFTs } from "@thirdweb-dev/react";
+import { useEffect } from "react";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as string;
-
-// Funzione helper per gestire in modo sicuro l'errore di tipo 'unknown'
-const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return "Si è verificato un errore sconosciuto nel caricamento degli NFT.";
-};
 
 export default function HomePage() {
   const address = useAddress();
   const { contract } = useContract(CONTRACT_ADDRESS);
   const { data: nfts, isLoading, error } = useOwnedNFTs(contract, address);
+
+  // SOLUZIONE DEFINITIVA: Usiamo un `useEffect` per gestire l'errore.
+  // Questo sposta la logica fuori dal JSX, risolvendo il problema di build.
+  useEffect(() => {
+    if (error) {
+      console.error("Errore nel caricamento degli NFT:", error);
+    }
+  }, [error]); // Questo si attiva solo quando l'errore cambia.
 
   const handleRefresh = () => {
     window.location.reload();
@@ -34,24 +35,33 @@ export default function HomePage() {
           <p><strong>Wallet Connesso:</strong> {address}</p>
           <h3>I Tuoi NFT</h3>
           {isLoading && <p>Caricamento NFT...</p>}
-          {!isLoading && nfts && nfts.length === 0 && <p>Non possiedi nessun NFT da questo contratto.</p>}
-          {!isLoading && nfts && nfts.length > 0 && (
-            <div>
-              <p><strong>Numero di NFT:</strong> {nfts.length}</p>
-              <ul>
-                {nfts.map((nft) => (
-                  <li key={nft.metadata.id.toString()}>
-                    <p><strong>Nome:</strong> {nft.metadata.name}</p>
-                    <p><strong>ID:</strong> {nft.metadata.id.toString()}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
+
+          {/* Se c'è un errore, mostriamo solo un messaggio generico */}
+          {error && (
+            <p style={{ color: 'red' }}>
+              Si è verificato un errore nel caricamento degli NFT. Controlla la console per i dettagli.
+            </p>
           )}
-          {/* QUESTA È LA SOLUZIONE DEFINITIVA: 
-              Usiamo la funzione helper per mostrare il messaggio di errore in modo sicuro. 
-          */}
-          {error && <p style={{color: 'red'}}>Errore: {getErrorMessage(error)}</p>}
+
+          {/* Mostriamo gli NFT solo se non c'è errore e non sta caricando */}
+          {!isLoading && !error && (
+            <>
+              {nfts && nfts.length === 0 && <p>Non possiedi nessun NFT da questo contratto.</p>}
+              {nfts && nfts.length > 0 && (
+                <div>
+                  <p><strong>Numero di NFT:</strong> {nfts.length}</p>
+                  <ul>
+                    {nfts.map((nft) => (
+                      <li key={nft.metadata.id.toString()}>
+                        <p><strong>Nome:</strong> {nft.metadata.name}</p>
+                        <p><strong>ID:</strong> {nft.metadata.id.toString()}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <div className="card">

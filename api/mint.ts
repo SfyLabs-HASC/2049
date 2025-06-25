@@ -43,13 +43,13 @@ export default async function handler(req: any, res: any) {
             
         const contract = await sdk.getContract(CONTRACT_ADDRESS);
         
-        // SOLUZIONE: Non usiamo più la scorciatoia .erc721.mintTo.
-        // Usiamo il metodo generico .call() per chiamare direttamente la funzione
-        // 'safeMint' del tuo contratto.
-        // NOTA: Se la funzione di mint del tuo contratto ha un nome diverso (es. "mint"),
-        // devi cambiarlo qui.
+        // SOLUZIONE: Cambiamo il nome della funzione da "safeMint" a "mint".
+        // "mint" è l'altro nome standard per la funzione di minting.
+        // 
+        // IMPORTANTE: Se anche questo non funziona, devi trovare il nome esatto
+        // della funzione di mint nel codice del tuo smart contract.
         const tx = await contract.call(
-            "safeMint",     // <--- NOME DELLA FUNZIONE DI MINT DEL TUO CONTRATTO
+            "mint",     // <--- NOME DELLA FUNZIONE CAMBIATO
             [
                 userWallet, // L'indirizzo a cui mintare (to)
                 nftId       // L'ID del token da mintare (tokenId)
@@ -62,7 +62,6 @@ export default async function handler(req: any, res: any) {
 
     } catch (error: any) {
         console.error("Errore nell'API di mint:", error);
-        // Inoltriamo il messaggio di errore specifico dal SDK/contratto
         return res.status(500).json({ error: error.message || 'Errore sconosciuto durante il minting.' });
     }
 }

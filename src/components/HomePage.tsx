@@ -1,5 +1,10 @@
+================================================================================
+FILE: src/components/HomePage.tsx
+Verifica che il tuo file sia così. Questa è la versione più sicura.
+================================================================================
+*/
 import { ConnectWallet, useAddress, useContract, useOwnedNFTs } from "@thirdweb-dev/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as string;
 
@@ -8,13 +13,16 @@ export default function HomePage() {
   const { contract } = useContract(CONTRACT_ADDRESS);
   const { data: nfts, isLoading, error } = useOwnedNFTs(contract, address);
 
-  // SOLUZIONE DEFINITIVA: Usiamo un `useEffect` per gestire l'errore.
-  // Questo sposta la logica fuori dal JSX, risolvendo il problema di build.
+  const [displayError, setDisplayError] = useState<string | null>(null);
+
   useEffect(() => {
     if (error) {
-      console.error("Errore nel caricamento degli NFT:", error);
+      console.error("Errore catturato dal hook useOwnedNFTs:", error);
+      setDisplayError("Si è verificato un errore nel caricamento degli NFT. Controlla la console per i dettagli.");
+    } else {
+        setDisplayError(null);
     }
-  }, [error]); // Questo si attiva solo quando l'errore cambia.
+  }, [error]);
 
   const handleRefresh = () => {
     window.location.reload();
@@ -34,17 +42,12 @@ export default function HomePage() {
           <h2>Le Tue Informazioni</h2>
           <p><strong>Wallet Connesso:</strong> {address}</p>
           <h3>I Tuoi NFT</h3>
+          
           {isLoading && <p>Caricamento NFT...</p>}
 
-          {/* Se c'è un errore, mostriamo solo un messaggio generico */}
-          {error && (
-            <p style={{ color: 'red' }}>
-              Si è verificato un errore nel caricamento degli NFT. Controlla la console per i dettagli.
-            </p>
-          )}
+          {displayError && <p style={{ color: 'red' }}>{displayError}</p>}
 
-          {/* Mostriamo gli NFT solo se non c'è errore e non sta caricando */}
-          {!isLoading && !error && (
+          {!isLoading && !displayError && (
             <>
               {nfts && nfts.length === 0 && <p>Non possiedi nessun NFT da questo contratto.</p>}
               {nfts && nfts.length > 0 && (

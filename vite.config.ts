@@ -1,7 +1,16 @@
+================================================================================
+FILE: vite.config.ts
+Sostituisci il contenuto del tuo file con questo.
+================================================================================
+*/
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: {
+    // Questo è necessario per far funzionare alcune dipendenze di thirdweb con Vite
+    "global": "globalThis",
+  },
 })
